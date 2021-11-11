@@ -1,4 +1,4 @@
-import connectionDB from '../../helpers/db';
+import { connectionDB, insertDocument } from '../../helpers/db-util';
 
 export default async function handler(req, res) {
   try {
@@ -13,11 +13,11 @@ export default async function handler(req, res) {
       const connection = await connectionDB();
 
       if (connection.level === 'error') {
-        return res.status(400).json({ message: connection.message });
+        return res.status(500).json({ message: connection.message });
       }
       const { db, client } = connection;
 
-      await db.collection('newsletter').insertOne({ email: userEmail });
+      await insertDocument(db, 'newsletter', { email: userEmail });
 
       client.close();
 

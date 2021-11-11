@@ -1,4 +1,4 @@
-import connectionDB from '../../../helpers/db';
+import { connectionDB, insertDocument, findDocuments } from '../../../helpers/db-util';
 
 export default async function handler(req, res) {
   try {
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const connection = await connectionDB();
 
     if (connection.level === 'error') {
-      return res.status(400).json({ message: connection.message });
+      return res.status(500).json({ message: connection.message });
     }
     const { db, client } = connection;
 
@@ -24,9 +24,9 @@ export default async function handler(req, res) {
         eventId: !eventId || eventId === 'undefined' ? email : eventId
       };
 
-      const result = await db.collection('comments').insertOne(newComment);
+      const result = await insertDocument(db, 'comments', newComment);
 
-      console.log(result);
+      console.log('result', result);
 
       newComment.id = result.insertedId;
 
@@ -34,8 +34,7 @@ export default async function handler(req, res) {
 
       return res.status(201).json({ message: 'Added comment.', comment: newComment });
     } else if (req.method === 'GET') {
-      console.log('event id', eventId);
-      const comments = await db.collection('comments').find({ eventId }).sort({ _id: -1 }).toArray();
+      const comments = await findDocuments(db, 'comments', { eventId }, { _id: -1 });
       console.log('comments', comments);
       client.close();
 
