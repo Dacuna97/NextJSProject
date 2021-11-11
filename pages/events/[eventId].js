@@ -5,6 +5,7 @@ import EventSummary from '../../components/event-detail/EventSummary';
 import EventLogistics from '../../components/event-detail/EventLogistics';
 import EventContent from '../../components/event-detail/EventContent';
 import ErrorAlert from '../../components/ui/ErrorAlert';
+import Comments from '../../components/input/Comments';
 
 function EventDetailPage({ event }) {
   if (!event) {
@@ -26,6 +27,7 @@ function EventDetailPage({ event }) {
       <EventContent>
         <p>{event.description}</p>
       </EventContent>
+      <Comments eventid={event.id} />
     </Fragment>
   );
 }
@@ -36,6 +38,11 @@ export async function getStaticProps(context) {
   } = context;
   const event = await getEventById(eventId);
 
+  if (!event || !eventId) {
+    return {
+      notFound: true
+    };
+  }
   return {
     props: {
       event
@@ -46,9 +53,7 @@ export async function getStaticProps(context) {
 
 export async function getStaticPaths() {
   const events = await getFeaturedEvents();
-
   const paths = events.map((event) => ({ params: { eventId: event.id } }));
-
   return {
     paths,
     //fallback: false // because I specified all events possible
